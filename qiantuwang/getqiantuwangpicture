@@ -1,0 +1,95 @@
+#coding:utf-8
+import requests
+import re
+import time
+import os
+useragent='Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/55.0.2883.87 Safari/537.36'
+Rurl='http://www.58pic.com/tupian/25144362.html'
+headers={
+    'Accept':' text/javascript, application/javascript, application/ecmascript, application/x-ecmascript, */*; q=0.01',
+    'User-Agent':useragent,
+    'Host':'www.58pic.com',
+    'Cookie':'qt_visitor_id=%2229302cca90f96dff135edce5ebbe96d1%22; qt_ur_type=2; UM_distinctid=15d8318f5f86-0be9b7a65-4349052c-100200-15d8318f60014d; CNZZDATA5004155=cnzz_eid%3D1158126205-1501141016-http%253A%252F%252Fwww.58pic.com%252F%26ntime%3D1501141016; invite_tag=%2229302cca90f96dff135edce5ebbe96d1%22; __guid=258851340.2557660737338260000.1505751561397.589; message2=1; user:search:worlds:new_0_1=%22a%253A1%253A%257Bi%253A0%253Bs%253A4%253A%2522%25B9%25FD%25B1%25A3%2522%253B%257D%22; referer=%22http%3A%5C%2F%5C%2Fwww.58pic.com%5C%2Ftupian%5C%2F25144362.html%22; history_search=%22%7B%5C%22%25B9%25FD%25B1%25A3_%5C%22%3A%5C%22%5C%5C%5C%2Ftupian%5C%5C%5C%2F25144362.html%5C%22%7D%22; awake=0; historyKw=%22s%253A4%253A%2522%25B9%25FD%25B1%25A3%2522%253B%22; monitor_count=2; Hm_lvt_644763986e48f2374d9118a9ae189e14=1505751703,1506181098,1508169079; Hm_lpvt_644763986e48f2374d9118a9ae189e14=1508169095'
+}
+def getnumber():
+    kw=raw_input("输入搜索名字")
+    url='http://www.58pic.com/index.php?m=search&a=ajaxCheckPinyin&jsoncallback=jQuery111006869713515737093_1508169095064&kw={}&sign=1&type=0&_=1508169095069'.format(kw)
+    req=requests.get(url,headers)
+    print(req.status_code)
+    print(req.text)
+    patter=re.compile(r'pinyin":"(.*?)"')
+    number=patter.findall(req.text)
+    print(number)
+    return number
+def gethtml(number,page):
+    page=str(page)
+    number=str(number[0])
+    print(number,page)
+    url=u'http://www.58pic.com/tupian/{0}-0-0-{1}.html'.format(number,page)
+    print(url)
+    url1='http://www.58pic.com/tupian/25144362.html'
+    headers1={
+    #'Accept':' text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8',
+     'User-Agent':'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/61.0.3141.7 Safari/537.36'
+  #   'Host':'www.58pic.com',
+  #   'Proxy-Connection':'keep-alive',
+  #   'Referer':'http://www.58pic.com/tupian/25144362.html',
+  #   'Upgrade-Insecure-Requests':1,
+  # 'Cookie':'message2=1; qt_visitor_id=%22dbc490433b69ab717fa4e6f612708b60%22; qt_ur_type=2; UM_distinctid=15d82f6887d41-0fc3679dbd8abc-1b1d7551-100200-15d82f6887e1f7; CNZZDATA5004155=cnzz_eid%3D1663641935-1501135616-http%253A%252F%252Fwww.58pic.com%252F%26ntime%3D1501163766; message2=1; referer=%22http%3A%5C%2F%5C%2Fwww.58pic.com%5C%2Ftupian%5C%2F25144362.html%22; history_search=%22%7B%5C%22%25B9%25FD%25B1%25A3_%5C%22%3A%5C%22%5C%5C%5C%2Ftupian%5C%5C%5C%2F25144362.html%5C%22%7D%22; awake=0; historyKw=%22s%253A4%253A%2522%25B9%25FD%25B1%25A3%2522%253B%22; Hm_lvt_644763986e48f2374d9118a9ae189e14=1505819172,1508224984; Hm_lpvt_644763986e48f2374d9118a9ae189e14=1508225016; user:search:worlds:new_0_1=%22a%253A1%253A%257Bi%253A1%253Bs%253A4%253A%2522%25B9%25FD%25B1%25A3%2522%253B%257D%22'
+
+    }
+    # rew=urllib2.Request(url1,headers=headers1)
+    # req=urllib2.urlopen(rew)
+    req=requests.get(url,headers1)
+    print(req.status_code)
+    html=req.text
+    print(html)
+    return html
+
+def geturl(html):
+    #http://pic.qiantucdn.com/58pic/11/75/22/53Z58PIChYp.jpg!qt290
+    urls=[]
+    urls2=[]
+    patter=re.compile(r'src="(.*?)"')
+    patter2=re.compile(r'data-original="(.*?)"')
+    urls=patter.findall(html)
+    urls=patter2.findall(html)
+    for url in urls:
+        if(url.find(".jpg")):
+            print(url)
+            urls2.append(url)
+    return urls2
+def Mkdir(dirname):
+    pathdir=os.path.join('C:\\',dirname)
+    if not os.path.exists(pathdir):
+        os.mkdir(pathdir)
+    return pathdir
+def downImg(url,dirpath,imgname):
+    filename=os.path.join(dirpath,imgname)
+    try:
+        res=requests.get(url,headers, timeout=15)
+        print(res.status_code)
+        if str(res.status_code)[0]=="4":
+            print(str(res.status_code), ":" , url)
+            return False
+    except Exception() as e:
+        print(u"抛出异常%s" %url)
+        print(e)
+        return False
+    with open(filename, "wb") as f:
+        f.write(res.content)
+    return True
+index=0
+def getImg(urls,dirpath):
+    global index
+    for url in urls:
+        downImg(url,dirpath,str(index)+".jpg")
+        index=index+1
+        print(u"已经下载%s"%str(index)+".jpg")
+number=getnumber()
+time.sleep(1)
+for i in range(10):
+    html=gethtml(number,i+1)
+    urls=geturl(html)
+    dirpath=Mkdir(u'千图网')
+    getImg(urls,dirpath)
